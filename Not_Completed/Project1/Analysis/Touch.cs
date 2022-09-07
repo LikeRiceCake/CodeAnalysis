@@ -173,31 +173,34 @@ namespace SpecialMove
                 finger2 = 1;
             else
                 finger2 = 0;
+            // 손가락이 최소 하나라도 닿아 있어야 아래 if 조건이 성립
             if (Input.touchCount > finger2) // 터치된 손가락 갯수가 finger2보다 크면
             {
-                right1 = Input.GetTouch(finger2).position;
+                right1 = Input.GetTouch(finger2).position; // right1에, 터치된 손가락 중 인덱스가 finger2인 요소의 위치 값 대입
                 switch (Input.GetTouch(finger2).phase)
                 {
                     case TouchPhase.Began:
-                        rightstart = right1;
-                        roundMax = 0;
-                        round = false;
+                        rightstart = right1; // rightstart에 right1 대입
+                        roundMax = 0; // roundMax를 0으로 변경
+                        round = false; // round를 false로 변경
+                        // round, roundMax는 아직까지 용도불명
                         break;
                     case TouchPhase.Moved:
-                        distanceSkill = Vector2.Distance(rightstart, right1);
-                        UltCheck();
+                        distanceSkill = Vector2.Distance(rightstart, right1); // 오른쪽 손의 시작 지점과 마지막 지점 사이의 거리를 대입
+                        // 왼쪽 손으로 이동하면서 커맨드를 입력하고 오른쪽 손으로 스킬의 방향을 지정하는건가?
+                        UltCheck(); // 궁극기 체크 아직 용도 불명
                         break;
                     case TouchPhase.Stationary:
                         distanceSkill = Vector2.Distance(rightstart, right1);
                         UltCheck();
                         break;
                     case TouchPhase.Ended:
-                        rightend = right1;
-                        SkillCheck();
+                        rightend = right1; // 터치가 끝난 지점에 마지막 터치 지점 대입
+                        SkillCheck(); // 스킬인지 체크
                         break;
                 }
             }
-            switch (SkillGetter(skillCommand))
+            switch (SkillGetter(skillCommand)) // 몇 번째 스킬이냐에 따라 게임 좌측상단에 있는 직사각형 스킬 칸의 불이 들어오거나 꺼짐
             {
                 case "1":
                     cool[1].GetComponent<Image>().color = Color.yellow;
@@ -235,6 +238,7 @@ namespace SpecialMove
         {
             if (gameStart)
             {
+                // 각 스킬당 쿨다운이 1이상이면 사용 준비가 된 스킬들. 쿨타임이 남았을 때는 시간을 표시한다.
                 if (coolDown[1] < 1)
                 {
                     coolDown[1] += 0.004167f;
@@ -280,16 +284,20 @@ namespace SpecialMove
                     cool[4].transform.GetChild(0).GetComponent<Image>().color = Color.white;
                     cool[4].transform.GetChild(1).GetComponent<Text>().text = "";
                 }
+                // coolDown[5]는 ult로 추정.
                 coolDown[5] += 0.003333f;
+                // 각각의 쿨타임이 돌 때는 검은색으로 감싸져있는 베일을 걷어내는 듯한 연출을 준다.
                 cool[1].GetComponent<Image>().fillAmount = coolDown[1];
                 cool[2].GetComponent<Image>().fillAmount = coolDown[2];
                 cool[3].GetComponent<Image>().fillAmount = coolDown[3];
                 cool[4].GetComponent<Image>().fillAmount = coolDown[4];
+                // 궁극기의 쿨다운은 cool[0] 게이지로, 스택의 정도는 cool[5] 게이지로 표현
                 cool[0].GetComponent<Slider>().value = coolDown[5];
                 cool[5].GetComponent<Slider>().value = stackUlt;
                 for (i = 0; i < Input.touchCount; i++)
                 {
                     if (EventSystem.current.IsPointerOverGameObject(i))
+                        // 손가락이 UI를 클릭했을 경우
                     {
                         ui = true;
                         break;
@@ -297,14 +305,14 @@ namespace SpecialMove
                     else
                         ui = false;
                 }
-                if (startSkill)
+                if (startSkill) // 스킬의 준비가 끝났다면
                 {
                     skillCommand = command[2] * 100 + command[1] * 10 + command[0];
 
-                    if (coolDown[int.Parse(SkillGetter(skillCommand))] >= 1)
+                    if (coolDown[int.Parse(SkillGetter(skillCommand))] >= 1) // 해당 스킬의 쿨다운이 1 이상이라면
                     {
-                        CoolDownReset(int.Parse(SkillGetter(skillCommand)));
-                        stackUlt += 0.201f;
+                        CoolDownReset(int.Parse(SkillGetter(skillCommand))); // 해당 스킬의 쿨다운을 리셋 시키고
+                        stackUlt += 0.201f; // ult스택을 추가
                         switch (SkillGetter(skillCommand))
                         {
                             case "1":
@@ -325,6 +333,7 @@ namespace SpecialMove
                     {
                         this.gameObject.GetComponent<PlayerRPC>().AutoAttack(this.transform.position, Quaternion.Euler(0, 0, directionSkill), PhotonNetwork.Time);
                     }
+                    // PlayerRPC 클래스로 정보 전달
                 }
                 startSkill = false;
             }
@@ -371,28 +380,29 @@ namespace SpecialMove
                 }
             }
         }
-        void UltCheck()
+        void UltCheck() // 궁극기 체크?
         {
-            if (roundMax < distanceSkill)
+            if (roundMax < distanceSkill) // roundMax가 원의 끝을 말하는 건가?
             {
                 roundMax = distanceSkill;
             }
             else if (distanceSkill > 150 && round == false && distanceSkill < roundMax * 0.7f)
+                // distanceSkill이 150보다 크고 round는 false이며 distanceSkill이 roundMax * 0.7f보다 작을 때
             {
-                round = true;
+                round = true; // round는 참이 된다.
             }
         }
-        void SkillCheck()
+        void SkillCheck() // 스킬 사용을 하는지 안하는지 체크
         {
             roundMax = 0;
-            if (round && stackUlt >= 1)
+            if (round && stackUlt >= 1) // round가 참이고 궁극기 스택이 1 이상이면
             {
-                round = false;
-                Hit.rooted = false;
+                round = false; // round는 다시 false
+                Hit.rooted = false; // 경직도 false
                 //       UltPref = PhotonNetwork.Instantiate("Ult", Vector3.zero, Quaternion.identity);
                 //      UltPref.GetComponent<Ult>().ult = 300;
             }
-            else
+            else // 아니라면
             {
                 if (distanceSkill < unit * 20)
                 {
@@ -417,11 +427,11 @@ namespace SpecialMove
                 }
             }
         }
-        void CoolDownReset(int a)
+        void CoolDownReset(int a) // 해당 스킬의 쿨타임 리셋
         {
             coolDown[a] = 0;
         }
-        string SkillGetter(int a)
+        string SkillGetter(int a) // 스킬을 가져옴
         {
             for (i = 4; i != 0; i--)
             {
@@ -556,7 +566,7 @@ namespace SpecialMove
             }
             time = 300;
         }
-        void CommandColor()
+        void CommandColor() // 커맨드 화살표를 시간에 따라 점점 옅어지게 만듦
         {
             arrow[2].GetComponent<Image>().color = new Color(color.r, color.g, color.b, time / 30f);
             arrow[1].GetComponent<Image>().color = new Color(color.r, color.g, color.b, time / 30f);

@@ -9,13 +9,13 @@ namespace SpecialMove
     {
         int i, j;
         public int cool;
-        public int timeRooted;
+        public int timeRooted; // 경직 시간
 
-        static public bool rooted;
+        static public bool rooted; // 경직 상태를 판단
 
         public Vector3 targetPoint;
 
-        void FixedUpdate()
+        void FixedUpdate() // 경직이 풀리게 해주고 cool 감소
         {
             if (timeRooted != 0)
             {
